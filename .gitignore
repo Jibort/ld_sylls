@@ -1,0 +1,40 @@
+# Binaris i executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+ld_sylls
+
+# Fitxers temporals
+*.tmp
+*.temp
+*.swp
+*~
+
+# Directoris i fitxers de test
+*.test
+*.out
+coverage.txt
+
+# Directoris de build
+build/
+dist/
+lib/
+
+# Fitxers IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Fitxers específics de Go
+*.o
+*.a
+*.mod.backup
+*.sum.backup
+
+# Fitxers de sistema
+.DS_Store
+Thumbs.db

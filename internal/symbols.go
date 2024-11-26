@@ -112,6 +112,17 @@ func StringToFixedPoints(pStr string) (rFPs []nr.FixedPoint) {
 	return
 }
 
+func FixedPointFromRune(pChar rune) (rFp nr.FixedPoint) {
+	rFp = Symbols['¬']
+	for rn, fp := range Symbols {
+		if rn == pChar {
+			rFp = fp
+			break
+		}
+	}
+	return
+}
+
 func RuneFromFixedPoint(pFP nr.FixedPoint) (rRune rune) {
 	rRune = '¬'
 	for rn, fp := range Symbols {

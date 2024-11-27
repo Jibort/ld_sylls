@@ -1,14 +1,11 @@
-package internal
+package neural
 
 import (
-	nr "github.com/jibort/ld_sylls/internal/neural"
+	"strings"
 )
 
-var _padd = FixedPointFromRune('~')
-var _ssep = FixedPointFromRune('_')
-
 // ConfigureSyllableSplitter configura una xarxa per separació sil·làbica
-func ConfigureSyllableSplitter(maxWordLength int) *nr.Network {
+func ConfigureSyllableSplitter(maxWordLength int) *Network {
 	// Calculem la mida màxima de la sortida (considerant els possibles separadors)
 	maxOutputLength := maxWordLength*2 - 1 // Cas pitjor: separador entre cada lletra
 
@@ -20,20 +17,36 @@ func ConfigureSyllableSplitter(maxWordLength int) *nr.Network {
 		maxOutputLength,   // Capa sortida (paraula amb separadors i padding)
 	}
 
-	return nr.NewNetwork(layerSizes)
+	return NewNetwork(layerSizes)
+}
+
+func PrepareCorpus() (rIns [][]FixedPoint, rTgts [][]FixedPoint, rMax_W int, rMax_S int) {
+	rMax_W, rMax_S = MaxCorpusLengths()
+
+	for word, sylls := range CorpusTest {
+		// Dividim la paraula en síl·labes
+		lstSylls := strings.Split(sylls, "_")
+
+		// Preparem les entrades i sortides com a FixedPoint
+		input := StringToFixedPoints(word, rMax_W)
+		target := PrepareTarget(word, lstSylls, rMax_S)
+		rIns = append(rIns, input)
+		rTgts = append(rTgts, target)
+	}
+	return rIns, rTgts, rMax_W, rMax_S
 }
 
 // PrepareInput prepara l'entrada de la xarxa
-func PrepareInput(word string, maxLength int) []nr.FixedPoint {
-	input := make([]nr.FixedPoint, maxLength)
+func PrepareInput(pWord string, pMaxLen int) []FixedPoint {
+	input := make([]FixedPoint, pMaxLen)
 
 	// Copiem els caràcters de la paraula
-	for i, char := range word {
+	for i, char := range pWord {
 		input[i] = FixedPointFromRune(char)
 	}
 
 	// Afegim el padding
-	for i := len(word); i < maxLength; i++ {
+	for i := len(pWord); i < pMaxLen; i++ {
 		input[i] = _padd
 	}
 
@@ -41,12 +54,12 @@ func PrepareInput(word string, maxLength int) []nr.FixedPoint {
 }
 
 // PrepareTarget prepara la sortida esperada
-func PrepareTarget(word string, syllables []string, maxLength int) []nr.FixedPoint {
-	target := make([]nr.FixedPoint, maxLength)
+func PrepareTarget(pWord string, pSylls []string, pMaxLength int) []FixedPoint {
+	target := make([]FixedPoint, pMaxLength)
 	pos := 0
 
 	// Per cada síl·laba excepte l'última
-	for _, syll := range syllables[:len(syllables)-1] {
+	for _, syll := range pSylls[:len(pSylls)-1] {
 		// Copiem els caràcters de la síl·laba
 		for _, char := range syll {
 			target[pos] = FixedPointFromRune(char)
@@ -58,14 +71,14 @@ func PrepareTarget(word string, syllables []string, maxLength int) []nr.FixedPoi
 	}
 
 	// Última síl·laba (sense separador al final)
-	lastSyll := syllables[len(syllables)-1]
+	lastSyll := pSylls[len(pSylls)-1]
 	for _, char := range lastSyll {
 		target[pos] = FixedPointFromRune(char)
 		pos++
 	}
 
 	// Afegim el padding
-	for i := pos; i < maxLength; i++ {
+	for i := pos; i < pMaxLength; i++ {
 		target[pos] = _padd
 	}
 
@@ -73,7 +86,7 @@ func PrepareTarget(word string, syllables []string, maxLength int) []nr.FixedPoi
 }
 
 // InterpretOutput converteix la sortida de la xarxa en síl·labes
-func InterpretOutput(output []nr.FixedPoint) []string {
+func InterpretOutput(output []FixedPoint) []string {
 	var syllables []string
 	var currentSyll string
 

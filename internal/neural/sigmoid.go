@@ -42,15 +42,15 @@ func InitSigmoid() {
 }
 
 // Valida si la taula està inicialitzada.
-func checkInitialized() {
+func CheckInitialized() {
 	if !isInitialized {
-		panic("Sigmoid table not initialized. Call InitSigmoid() first")
+		InitSigmoid()
 	}
 }
 
 // Sigmoid retorna el valor de la funció sigmoide utilitzant la lookup table
 func Sigmoid(x FixedPoint) FixedPoint {
-	checkInitialized()
+	CheckInitialized()
 
 	// Convertim el valor x (-1.0 a 1.0) a un índex (0 a 200)
 	f := x.ToFloat64()

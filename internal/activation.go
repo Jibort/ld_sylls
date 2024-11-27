@@ -25,7 +25,7 @@ func InitializeNeural() error {
 	return nil
 }
 
-func checkInitialized() {
+func CheckInitialized() {
 	if !isInitialized {
 		panic("Neural network system not initialized. Call InitializeNeural() first")
 	}

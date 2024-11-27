@@ -17,10 +17,13 @@ type Network struct {
 	LastError    FixedPoint // Per guardar l'últim error calculat
 }
 
+func InitializeNetwork(pInSize, pOutSize int) *Network {
+	layerSizes := []int{pInSize, pInSize, pOutSize, pOutSize} // Configuració bàsica de capes
+	return NewNetwork(layerSizes)
+}
+
 // NewNetwork crea una nova xarxa neuronal
 func NewNetwork(layerSizes []int) *Network {
-	// checkInitialized()
-
 	if len(layerSizes) < 2 {
 		panic("La xarxa ha de tenir almenys una capa d'entrada i una de sortida")
 	}
@@ -53,6 +56,12 @@ func (n *Network) Forward(input []FixedPoint) []FixedPoint {
 func RandomFixedPoint(min, max float64) FixedPoint {
 	random := min + rand.Float64()*(max-min)
 	return FromFloat64(random)
+}
+
+func TrainModel(network *Network, inputs, targets [][]FixedPoint, epochs int) {
+	fmt.Println("Començant l'entrenament...")
+	network.Train(inputs, targets, epochs) // Entrenament complet
+	fmt.Println("Entrenament finalitzat.")
 }
 
 // Train entrena la xarxa amb un conjunt de dades
@@ -243,4 +252,25 @@ func (n *Network) updateWeights() {
 			layer.Biases[i] = layer.Biases[i].Sub(update)
 		}
 	}
+}
+
+func ValidateModel(network *Network, validationInputs, validationTargets [][]FixedPoint) {
+	correct := 0
+	for i, input := range validationInputs {
+		fmt.Printf("valida: '%s' -> ", FixedPointsToString(input))
+		predicted := network.Predict(input)
+		fmt.Printf("'%s'\n", FixedPointsToString(predicted))
+		if IsPredictionCorrect(predicted, validationTargets[i]) {
+			correct++
+		}
+	}
+	accuracy := float64(correct) / float64(len(validationInputs)) * 100
+	fmt.Printf("Precisió de validació: %.2f%%\n", accuracy)
+}
+
+func IsPredictionCorrect(predicted, target []FixedPoint) bool {
+	// Compara la predicció i el target (implementació simplificada)
+	ok := len(predicted) == len(target) && fmt.Sprintf("%v", predicted) == fmt.Sprintf("%v", target)
+	fmt.Printf("'%s' == '%s': %v\n", FixedPointsToString(predicted), FixedPointsToString(target), ok)
+	return ok
 }
